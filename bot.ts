@@ -1,3 +1,5 @@
+#!/usr/bin/env ts-node
+
 import fetch from 'cross-fetch';
 import LemmyBot from 'lemmy-bot';
 import { config } from 'dotenv';
