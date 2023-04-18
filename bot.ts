@@ -1,7 +1,7 @@
 #!/usr/bin/env ts-node
 
 import fetch from 'cross-fetch';
-import LemmyBot from 'lemmy-bot';
+import LemmyBot, { CommentView, PostView } from 'lemmy-bot';
 import { config } from 'dotenv';
 
 config();
@@ -31,7 +31,7 @@ const getOCR = async (url: string): Promise<OCRResponse | undefined> => {
   try {
     res = await (
       await fetch(
-        `https://api.ocr.space/parse/imageurl?apikey=${OCR_API_KEY}&url=${url}`
+        `https://api.ocr.space/parse/imageurl?apikey=${OCR_API_KEY}&url=${url}&OCREngine=2`
       )
     ).json();
   } catch (e) {
@@ -55,27 +55,24 @@ const bot = new LemmyBot({
   },
   handlers: {
     async mention({
-      mentionView: {
-        comment: { path, post_id, id },
-      },
-      botActions: { getPost, getComment, createComment },
+      mentionView: { comment },
+      botActions: { createComment, getParentOfComment },
     }) {
-      const pathList = path.split('.').filter((i) => i !== '0');
-
+      const parentResponse = await getParentOfComment(comment);
       let returnText = '';
 
-      if (pathList.length === 1) {
+      if (parentResponse.type === 'post') {
         const {
           post: { url, body },
-        } = await getPost(post_id);
+        } = parentResponse.data as PostView;
 
         if (url) {
           const res = await getOCR(url);
 
           if (isValidResponse(res)) {
-            returnText += `**URL image text**\n${
+            returnText += `::: spoiler URL image text\n${
               res!.ParsedResults[0].ParsedText
-            }`;
+            }\n:::`;
           }
         }
 
@@ -87,21 +84,16 @@ const bot = new LemmyBot({
             if (isValidResponse(res)) {
               returnText += `${
                 returnText.length > 0 || i > 0 ? '\n' : ''
-              }**Body image ${i + 1} text**\n${
+              }::: spoiler Body image ${i + 1} text\n${
                 res!.ParsedResults[0].ParsedText
-              }`;
+              }\n:::`;
             }
           }
         }
       } else {
-        const parentId = Number(pathList[pathList.length - 2]);
-
         const {
           comment: { content },
-        } = await getComment({
-          id: parentId,
-          postId: post_id,
-        });
+        } = parentResponse.data as CommentView;
 
         const images = getImageUrls(content);
         for (let i = 0; i < images.length; ++i) {
@@ -110,7 +102,9 @@ const bot = new LemmyBot({
           if (isValidResponse(res)) {
             returnText += `${
               returnText.length > 0 || i > 0 ? '\n' : ''
-            }**Image ${i + 1} text**\n${res!.ParsedResults[0].ParsedText}`;
+            }::: spoiler Image ${i + 1} text\n${
+              res!.ParsedResults[0].ParsedText
+            }\n:::`;
           }
         }
       }
@@ -118,14 +112,14 @@ const bot = new LemmyBot({
       if (returnText.length > 0) {
         createComment({
           content: `${returnText}\n\n*This action was performed by a bot.*`,
-          postId: post_id,
-          parentId: id,
+          postId: comment.post_id,
+          parentId: comment.id,
         });
       } else {
         createComment({
           content: 'Could not find any images with text',
-          postId: post_id,
-          parentId: id,
+          postId: comment.post_id,
+          parentId: comment.id,
         });
       }
     },
