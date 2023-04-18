@@ -53,6 +53,7 @@ const bot = new LemmyBot({
     username: USERNAME_OR_EMAIL,
     password: PASSWORD,
   },
+  federation: 'all',
   handlers: {
     async mention({
       mentionView: { comment },
