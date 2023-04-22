@@ -17,4 +17,4 @@ When the bot is setup, it can be started by running `npm start`.
 
 # Usage
 
-To use the bot, mention the bot in a reply to a post or comment. It will scan any images for text and respond to you with the text.
+To use the bot, mention the bot in a reply to a post or comment. It will scan any images for text and respond to you with the text. Alternatively, if you create a post or comment that includes both a mention to the OCR bot and images, the OCR bot will respond with the scans.

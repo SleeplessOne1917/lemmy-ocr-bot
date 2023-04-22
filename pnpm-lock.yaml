@@ -1,21 +1,21 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@types/node': ^18.15.11
+  '@types/node': ^18.15.13
   cross-fetch: ^3.1.5
   dotenv: ^16.0.3
-  lemmy-bot: ^0.2.5
+  lemmy-bot: ^0.3.0
   ts-node: ^10.9.1
   typescript: ^5.0.4
 
 dependencies:
   cross-fetch: 3.1.5
   dotenv: 16.0.3
-  lemmy-bot: 0.2.5
+  lemmy-bot: 0.3.0
 
 devDependencies:
-  '@types/node': 18.15.11
-  ts-node: 10.9.1_bhanhq442dy43ncydsavgi4jfi
+  '@types/node': 18.15.13
+  ts-node: 10.9.1_jplwry3w2vlzigyuop7zuee6tu
   typescript: 5.0.4
 
 packages:
@@ -106,8 +106,8 @@ packages:
     resolution: {integrity: sha512-yOlFc+7UtL/89t2ZhjPvvB/DeAr3r+Dq58IgzsFkOAvVC6NMJXmCGjbptdXdR9qsX7pKcTL+s87FtYREi2dEEQ==}
     dev: true
 
-  /@types/node/18.15.11:
-    resolution: {integrity: sha512-E5Kwq2n4SbMzQOn6wnmBjuK9ouqlURrcZDVfbo9ftDDTFt3nk7ZKK4GMOzoYgnpQJKcxwQw+lGaBvvlMo0qN/Q==}
+  /@types/node/18.15.13:
+    resolution: {integrity: sha512-N+0kuo9KgrUQ1Sn/ifDXsvg0TTleP7rIy4zOBGECxAljqvqfqpTfzx0Q1NUedOixRMBfe2Whhb056a42cWs26Q==}
     dev: true
 
   /abbrev/1.1.1:
@@ -556,8 +556,8 @@ packages:
     dev: false
     optional: true
 
-  /lemmy-bot/0.2.5:
-    resolution: {integrity: sha512-YY/p3lfjXja2y1Gp+7fOJxvSQtKcymI5hTdMtSWXPivaeJE7/2jtxUkO2hoipQlsAh7Cz3cIZwJu7DgsvPJmOA==}
+  /lemmy-bot/0.3.0:
+    resolution: {integrity: sha512-Uk6IEAxPo/prcVq6mIAOc1yS8jDrpZrDp/qb8L34WWFIwmt+jsiNGX8HXWoEXfIXYRQb548gRnqZGrEfMNN6Vw==}
     dependencies:
       lemmy-js-client: 0.17.2-rc.6
       node-cron: 3.0.2
@@ -1010,7 +1010,7 @@ packages:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
     dev: false
 
-  /ts-node/10.9.1_bhanhq442dy43ncydsavgi4jfi:
+  /ts-node/10.9.1_jplwry3w2vlzigyuop7zuee6tu:
     resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
     hasBin: true
     peerDependencies:
@@ -1029,7 +1029,7 @@ packages:
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.3
-      '@types/node': 18.15.11
+      '@types/node': 18.15.13
       acorn: 8.8.2
       acorn-walk: 8.2.0
       arg: 4.1.3

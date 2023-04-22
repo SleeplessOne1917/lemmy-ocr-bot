@@ -47,6 +47,56 @@ const isValidResponse = (res?: OCRResponse) =>
 const { INSTANCE, USERNAME_OR_EMAIL, PASSWORD, OCR_API_KEY } =
   process.env as Record<string, string>;
 
+const getResponseFromPost = async ({ url, body }: PostView['post']) => {
+  let returnText = '';
+
+  if (url) {
+    const res = await getOCR(url);
+
+    if (isValidResponse(res)) {
+      returnText += `::: spoiler URL image text\n${
+        res!.ParsedResults[0].ParsedText
+      }\n:::`;
+    }
+  }
+
+  if (body) {
+    const images = getImageUrls(body);
+    for (let i = 0; i < images.length; ++i) {
+      const res = await getOCR(images[i]);
+
+      if (isValidResponse(res)) {
+        returnText += `${
+          returnText.length > 0 || i > 0 ? '\n' : ''
+        }::: spoiler Body image ${i + 1} text\n${
+          res!.ParsedResults[0].ParsedText
+        }\n:::`;
+      }
+    }
+  }
+
+  return returnText;
+};
+
+const getResponseFromComment = async (content: string) => {
+  const images = getImageUrls(content);
+
+  let returnText = '';
+  for (let i = 0; i < images.length; ++i) {
+    const res = await getOCR(images[i]);
+
+    if (isValidResponse(res)) {
+      returnText += `${
+        returnText.length > 0 || i > 0 ? '\n' : ''
+      }::: spoiler Image ${i + 1} text\n${
+        res!.ParsedResults[0].ParsedText
+      }\n:::`;
+    }
+  }
+
+  return returnText;
+};
+
 const bot = new LemmyBot({
   instance: INSTANCE,
   credentials: {
@@ -54,59 +104,52 @@ const bot = new LemmyBot({
     password: PASSWORD,
   },
   federation: 'all',
+  // dbFile: 'db.sqlite3',
   handlers: {
+    async post({ postView: { post }, botActions: { createComment } }) {
+      if (
+        post.body
+          ?.toLowerCase()
+          .includes(
+            `@${USERNAME_OR_EMAIL}@${INSTANCE.replace(/:.*/, '')}`.toLowerCase()
+          )
+      ) {
+        const responseText = await getResponseFromPost(post);
+
+        if (responseText.length > 0) {
+          createComment({
+            content: `${responseText}\n\n*This action was performed by a bot.*`,
+            postId: post.id,
+          });
+        } else {
+          createComment({
+            content: 'Could not find any images with text',
+            postId: post.id,
+          });
+        }
+      }
+    },
     async mention({
       mentionView: { comment },
       botActions: { createComment, getParentOfComment },
     }) {
-      const parentResponse = await getParentOfComment(comment);
-      let returnText = '';
+      let returnText = await getResponseFromComment(comment.content);
 
-      if (parentResponse.type === 'post') {
-        const {
-          post: { url, body },
-        } = parentResponse.data as PostView;
+      if (returnText.length === 0) {
+        const parentResponse = await getParentOfComment(comment);
 
-        if (url) {
-          const res = await getOCR(url);
+        if (parentResponse.type === 'post') {
+          const { post } = parentResponse.data as PostView;
 
-          if (isValidResponse(res)) {
-            returnText += `::: spoiler URL image text\n${
-              res!.ParsedResults[0].ParsedText
-            }\n:::`;
-          }
-        }
+          console.log(post.body);
 
-        if (body) {
-          const images = getImageUrls(body);
-          for (let i = 0; i < images.length; ++i) {
-            const res = await getOCR(images[i]);
+          returnText = await getResponseFromPost(post);
+        } else {
+          const {
+            comment: { content },
+          } = parentResponse.data as CommentView;
 
-            if (isValidResponse(res)) {
-              returnText += `${
-                returnText.length > 0 || i > 0 ? '\n' : ''
-              }::: spoiler Body image ${i + 1} text\n${
-                res!.ParsedResults[0].ParsedText
-              }\n:::`;
-            }
-          }
-        }
-      } else {
-        const {
-          comment: { content },
-        } = parentResponse.data as CommentView;
-
-        const images = getImageUrls(content);
-        for (let i = 0; i < images.length; ++i) {
-          const res = await getOCR(images[i]);
-
-          if (isValidResponse(res)) {
-            returnText += `${
-              returnText.length > 0 || i > 0 ? '\n' : ''
-            }::: spoiler Image ${i + 1} text\n${
-              res!.ParsedResults[0].ParsedText
-            }\n:::`;
-          }
+          returnText = await getResponseFromComment(content);
         }
       }
 
