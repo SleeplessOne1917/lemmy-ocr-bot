@@ -104,7 +104,7 @@ const bot = new LemmyBot({
     password: PASSWORD,
   },
   federation: 'all',
-  // dbFile: 'db.sqlite3',
+  dbFile: 'db.sqlite3',
   handlers: {
     async post({ postView: { post }, botActions: { createComment } }) {
       if (
