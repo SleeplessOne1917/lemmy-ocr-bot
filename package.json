@@ -4,7 +4,7 @@
   "description": "",
   "main": "bot.ts",
   "scripts": {
-    "start": "npm i -g pnpm && pnpm i && ts-node bot.ts"
+    "start": "ts-node bot.ts"
   },
   "keywords": [],
   "author": "",
