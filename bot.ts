@@ -1,5 +1,3 @@
-#!/usr/bin/env ts-node
-
 import fetch from 'cross-fetch';
 import LemmyBot, { CommentView, PostView } from 'lemmy-bot';
 import { config } from 'dotenv';
