@@ -117,12 +117,12 @@ const bot = new LemmyBot({
         if (responseText.length > 0) {
           createComment({
             content: `${responseText}\n\n*This action was performed by a bot.*`,
-            postId: post.id,
+            post_id: post.id,
           });
         } else {
           createComment({
             content: 'Could not find any images with text',
-            postId: post.id,
+            post_id: post.id,
           });
         }
       }
@@ -154,14 +154,14 @@ const bot = new LemmyBot({
       if (returnText.length > 0) {
         createComment({
           content: `${returnText}\n\n*This action was performed by a bot.*`,
-          postId: comment.post_id,
-          parentId: comment.id,
+          post_id: comment.post_id,
+          parent_id: comment.id,
         });
       } else {
         createComment({
           content: 'Could not find any images with text',
-          postId: comment.post_id,
-          parentId: comment.id,
+          post_id: comment.post_id,
+          parent_id: comment.id,
         });
       }
     },
