@@ -47,31 +47,40 @@ const { INSTANCE, USERNAME_OR_EMAIL, PASSWORD, OCR_API_KEY } =
 
 const getResponseFromPost = async ({ url, body }: PostView['post']) => {
   let returnText = '';
+  const promises: Promise<void>[] = [];
 
   if (url) {
-    const res = await getOCR(url);
+    promises.push(
+      (async () => {
+        const res = await getOCR(url);
 
-    if (isValidResponse(res)) {
-      returnText += `::: spoiler URL image text\n${
-        res!.ParsedResults[0].ParsedText
-      }\n:::`;
-    }
+        if (isValidResponse(res)) {
+          returnText += `::: spoiler URL image text\n${
+            res!.ParsedResults[0].ParsedText
+          }\n:::`;
+        }
+      })()
+    );
   }
 
   if (body) {
     const images = getImageUrls(body);
-    for (let i = 0; i < images.length; ++i) {
-      const res = await getOCR(images[i]);
+    promises.push(
+      ...images.map(async (image, i) => {
+        const res = await getOCR(image);
 
-      if (isValidResponse(res)) {
-        returnText += `${
-          returnText.length > 0 || i > 0 ? '\n' : ''
-        }::: spoiler Body image ${i + 1} text\n${
-          res!.ParsedResults[0].ParsedText
-        }\n:::`;
-      }
-    }
+        if (isValidResponse(res)) {
+          returnText += `${
+            returnText.length > 0 || i > 0 ? '\n' : ''
+          }::: spoiler Body image ${i + 1} text\n${
+            res!.ParsedResults[0].ParsedText
+          }\n:::`;
+        }
+      })
+    );
   }
+
+  await Promise.all(promises);
 
   return returnText;
 };
@@ -80,7 +89,7 @@ const getResponseFromComment = async (content: string) => {
   const images = getImageUrls(content);
 
   let returnText = '';
-  for (let i = 0; i < images.length; ++i) {
+  const promises = images.map(async (image, i) => {
     const res = await getOCR(images[i]);
 
     if (isValidResponse(res)) {
@@ -90,7 +99,9 @@ const getResponseFromComment = async (content: string) => {
         res!.ParsedResults[0].ParsedText
       }\n:::`;
     }
-  }
+  });
+
+  await Promise.all(promises);
 
   return returnText;
 };
