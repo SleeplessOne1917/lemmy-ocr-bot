@@ -6,6 +6,8 @@ config();
 
 const imageRegex = /!\[.*\]\((.*)\)/g;
 
+const mimeTypeRegex = /\.([A-Za-z\d]{3,4})(?:\?(?:\S+=\S+&?)*)?$/;
+
 const getImageUrls = (markdown: string) => {
   const urls: string[] = [];
   for (
@@ -19,17 +21,48 @@ const getImageUrls = (markdown: string) => {
   return urls;
 };
 
+const getMimeType = (url: string) => {
+  const fileExtensionMatch = url.match(mimeTypeRegex);
+
+  if (fileExtensionMatch && fileExtensionMatch[1]) {
+    const fileExtension = fileExtensionMatch[1];
+
+    switch (fileExtension) {
+      case 'jpeg':
+      case 'jpg': {
+        return 'image/jpeg';
+      }
+      case 'png': {
+        return 'image/png';
+      }
+      case 'gif': {
+        return 'image/gif';
+      }
+      default: {
+        return undefined;
+      }
+    }
+  } else {
+    return undefined;
+  }
+};
+
 type OCRResponse = {
   IsErroredOnProcessing: boolean;
   ParsedResults: { ParsedText: string }[];
 };
 
 const getOCR = async (url: string): Promise<OCRResponse | undefined> => {
+  const mimeType = getMimeType(url);
+  if (!mimeType) {
+    return undefined;
+  }
+
   let res: OCRResponse | undefined = undefined;
   try {
     res = await (
       await fetch(
-        `https://api.ocr.space/parse/imageurl?apikey=${OCR_API_KEY}&url=${url}&OCREngine=2`
+        `https://api.ocr.space/parse/imageurl?apikey=${OCR_API_KEY}&url=${url}&OCREngine=2&filetype=${mimeType}`
       )
     ).json();
   } catch (e) {
@@ -90,7 +123,7 @@ const getResponseFromComment = async (content: string) => {
 
   let returnText = '';
   const promises = images.map(async (image, i) => {
-    const res = await getOCR(images[i]);
+    const res = await getOCR(image);
 
     if (isValidResponse(res)) {
       returnText += `${
