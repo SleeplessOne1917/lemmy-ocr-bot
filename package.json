@@ -10,11 +10,12 @@
   "author": "",
   "license": "APGL-3.0",
   "dependencies": {
-    "@types/node": "^20.4.1",
-    "cross-fetch": "^4.0.0",
     "dotenv": "^16.3.1",
-    "lemmy-bot": "^0.4.3",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.1.6"
+    "lemmy-bot": "^0.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
   }
 }

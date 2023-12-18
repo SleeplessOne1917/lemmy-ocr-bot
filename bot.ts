@@ -1,4 +1,3 @@
-import fetch from 'cross-fetch';
 import LemmyBot, { CommentView, PostView } from 'lemmy-bot';
 import { config } from 'dotenv';
 
@@ -62,7 +61,7 @@ const getOCR = async (url: string): Promise<OCRResponse | undefined> => {
   try {
     res = await (
       await fetch(
-        `https://api.ocr.space/parse/imageurl?apikey=${OCR_API_KEY}&url=${url}&OCREngine=2&filetype=${mimeType}`
+        `https://api.ocr.space/parse/imageurl?apikey=${OCR_API_KEY}&url=${url}&OCREngine=2&filetype=${mimeType}`,
       )
     ).json();
   } catch (e) {
@@ -92,7 +91,7 @@ const getResponseFromPost = async ({ url, body }: PostView['post']) => {
             res!.ParsedResults[0].ParsedText
           }\n:::`;
         }
-      })()
+      })(),
     );
   }
 
@@ -109,7 +108,7 @@ const getResponseFromPost = async ({ url, body }: PostView['post']) => {
             res!.ParsedResults[0].ParsedText
           }\n:::`;
         }
-      })
+      }),
     );
   }
 
@@ -153,7 +152,10 @@ const bot = new LemmyBot({
         post.body
           ?.toLowerCase()
           .includes(
-            `@${USERNAME_OR_EMAIL}@${INSTANCE.replace(/:.*/, '')}`.toLowerCase()
+            `@${USERNAME_OR_EMAIL}@${INSTANCE.replace(
+              /:.*/,
+              '',
+            )}`.toLowerCase(),
           )
       ) {
         const responseText = await getResponseFromPost(post);
