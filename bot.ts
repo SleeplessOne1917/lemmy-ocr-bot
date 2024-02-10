@@ -12,8 +12,6 @@ const getImageUrls = (markdown: string) => {
     match;
     match = imageRegex.exec(markdown)
   ) {
-    console.log(match);
-    console.log(`Got url match = ${match[1]}`);
     urls.push(match[1]);
   }
 
@@ -43,8 +41,6 @@ const getOCR = async (url: string): Promise<OCRResponse | undefined> => {
     filetype = '&filetype=JPG';
   }
 
-  console.log(`getting ocr with image url = ${urlWithoutQuery}`);
-
   try {
     res = await fetch(
       `https://api.ocr.space/parse/imageurl?apikey=${OCR_API_KEY}&url=${urlWithoutQuery.toString()}&OCREngine=2${filetype}`,
@@ -66,13 +62,10 @@ const getResponseFromPost = async ({ url, body }: PostView['post']) => {
   let returnText = '';
   const promises: Promise<void>[] = [];
 
-  console.log('In get response from post');
   if (url) {
     promises.push(
       (async () => {
         const res = await getOCR(url);
-        console.log('got url response');
-        console.log(res);
 
         if (isValidResponse(res)) {
           returnText += `::: spoiler URL image text\n${
@@ -106,16 +99,11 @@ const getResponseFromPost = async ({ url, body }: PostView['post']) => {
 };
 
 const getResponseFromComment = async (content: string) => {
-  console.log(`Content = ${content}`);
   const images = getImageUrls(content);
-  console.log('images:');
-  console.log(images);
 
   let returnText = '';
   const promises = images.map(async (image, i) => {
     const res = await getOCR(image);
-    console.log(`Got res for ${i}`);
-    console.log(res);
 
     if (isValidResponse(res)) {
       returnText += `${
@@ -177,8 +165,6 @@ const bot = new LemmyBot({
 
         if (parentResponse.type === 'post') {
           const { post } = parentResponse.data as PostView;
-
-          console.log(post.body);
 
           returnText = await getResponseFromPost(post);
         } else {
