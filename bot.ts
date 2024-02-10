@@ -3,9 +3,7 @@ import { config } from 'dotenv';
 
 config();
 
-const imageRegex = /!\[.*\]\((.*)\)/g;
-
-const mimeTypeRegex = /\.([A-Za-z\d]{3,4})(?:\?(?:\S+=\S+&?)*)?$/;
+const imageRegex = /!\[[^\]]*\]\(([^\)]+)\)/g;
 
 const getImageUrls = (markdown: string) => {
   const urls: string[] = [];
@@ -14,36 +12,12 @@ const getImageUrls = (markdown: string) => {
     match;
     match = imageRegex.exec(markdown)
   ) {
+    console.log(match);
+    console.log(`Got url match = ${match[1]}`);
     urls.push(match[1]);
   }
 
   return urls;
-};
-
-const getMimeType = (url: string) => {
-  const fileExtensionMatch = url.match(mimeTypeRegex);
-
-  if (fileExtensionMatch && fileExtensionMatch[1]) {
-    const fileExtension = fileExtensionMatch[1];
-
-    switch (fileExtension) {
-      case 'jpeg':
-      case 'jpg': {
-        return 'image/jpeg';
-      }
-      case 'png': {
-        return 'image/png';
-      }
-      case 'gif': {
-        return 'image/gif';
-      }
-      default: {
-        return undefined;
-      }
-    }
-  } else {
-    return undefined;
-  }
 };
 
 type OCRResponse = {
@@ -52,18 +26,29 @@ type OCRResponse = {
 };
 
 const getOCR = async (url: string): Promise<OCRResponse | undefined> => {
-  const mimeType = getMimeType(url);
-  if (!mimeType) {
-    return undefined;
+  let res: OCRResponse | undefined = undefined;
+  let urlWithoutQuery = new URL(url);
+
+  for (const key of urlWithoutQuery.searchParams.keys()) {
+    urlWithoutQuery.searchParams.delete(key);
   }
 
-  let res: OCRResponse | undefined = undefined;
+  let filetype: string | undefined = undefined;
+  if (urlWithoutQuery.pathname.endsWith('.webp')) {
+    urlWithoutQuery.searchParams.append('format', 'jpg');
+    filetype = '&filetype=JPG';
+  }
+
+  if (urlWithoutQuery.pathname.endsWith('.jpeg')) {
+    filetype = '&filetype=JPG';
+  }
+
+  console.log(`getting ocr with image url = ${urlWithoutQuery}`);
+
   try {
-    res = await (
-      await fetch(
-        `https://api.ocr.space/parse/imageurl?apikey=${OCR_API_KEY}&url=${url}&OCREngine=2&filetype=${mimeType}`,
-      )
-    ).json();
+    res = await fetch(
+      `https://api.ocr.space/parse/imageurl?apikey=${OCR_API_KEY}&url=${urlWithoutQuery.toString()}&OCREngine=2${filetype}`,
+    ).then((res) => res.json());
   } catch (e) {
     console.log(e);
   }
@@ -81,10 +66,13 @@ const getResponseFromPost = async ({ url, body }: PostView['post']) => {
   let returnText = '';
   const promises: Promise<void>[] = [];
 
+  console.log('In get response from post');
   if (url) {
     promises.push(
       (async () => {
         const res = await getOCR(url);
+        console.log('got url response');
+        console.log(res);
 
         if (isValidResponse(res)) {
           returnText += `::: spoiler URL image text\n${
@@ -118,11 +106,16 @@ const getResponseFromPost = async ({ url, body }: PostView['post']) => {
 };
 
 const getResponseFromComment = async (content: string) => {
+  console.log(`Content = ${content}`);
   const images = getImageUrls(content);
+  console.log('images:');
+  console.log(images);
 
   let returnText = '';
   const promises = images.map(async (image, i) => {
     const res = await getOCR(image);
+    console.log(`Got res for ${i}`);
+    console.log(res);
 
     if (isValidResponse(res)) {
       returnText += `${
