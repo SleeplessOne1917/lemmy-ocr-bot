@@ -10,8 +10,8 @@
   "author": "",
   "license": "APGL-3.0",
   "dependencies": {
-    "dotenv": "^16.4.1",
-    "lemmy-bot": "^0.5.2"
+    "dotenv": "^16.4.2",
+    "lemmy-bot": "^0.6.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",
