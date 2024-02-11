@@ -1,4 +1,4 @@
-import LemmyBot, { CommentView, PostView } from 'lemmy-bot';
+import LemmyBot, { Post } from 'lemmy-bot';
 import { config } from 'dotenv';
 
 config();
@@ -58,7 +58,7 @@ const isValidResponse = (res?: OCRResponse) =>
 const { INSTANCE, USERNAME_OR_EMAIL, PASSWORD, OCR_API_KEY } =
   process.env as Record<string, string>;
 
-const getResponseFromPost = async ({ url, body }: PostView['post']) => {
+const getResponseFromPost = async ({ url, body }: Post) => {
   let returnText = '';
   const promises: Promise<void>[] = [];
 
@@ -164,13 +164,17 @@ const bot = new LemmyBot({
         const parentResponse = await getParentOfComment(comment);
 
         if (parentResponse.type === 'post') {
-          const { post } = parentResponse.data as PostView;
+          const {
+            post_view: { post },
+          } = parentResponse.post;
 
           returnText = await getResponseFromPost(post);
         } else {
           const {
-            comment: { content },
-          } = parentResponse.data as CommentView;
+            comment_view: {
+              comment: { content },
+            },
+          } = parentResponse.comment;
 
           returnText = await getResponseFromComment(content);
         }
